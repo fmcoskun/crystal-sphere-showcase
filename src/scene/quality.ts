@@ -41,7 +41,7 @@ export function detectCaps(): Caps {
   const nav = navigator as Navigator & { deviceMemory?: number }
   return {
     webgl,
-    isMobile: window.matchMedia('(pointer: coarse)').matches,
+    isMobile: window.matchMedia?.('(pointer: coarse)').matches ?? false,
     hardwareConcurrency: nav.hardwareConcurrency ?? 4,
     deviceMemory: nav.deviceMemory,
   }
