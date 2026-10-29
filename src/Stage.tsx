@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
-import { MODULES } from './content/modules'
 import { t, type Lang } from './i18n/dictionary'
 import { GlassPanel } from './panel/GlassPanel'
+import { ModuleDetail } from './panel/ModuleDetail'
 import { ModuleList } from './panel/ModuleList'
 import { SphereHost } from './scene/SphereHost'
 import { useLightOffset } from './scene/useLightOffset'
@@ -96,18 +96,12 @@ export function Stage({ lang, theme, optics, forceRenderer }: Props) {
                 <ModuleList lang={lang} onSelect={(id) => send({ type: 'SELECT', module: id })} />
               )}
               {state.view === 'detail' && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => send({ type: 'BACK' })}
-                    className="crystal-row min-h-[44px] rounded-full px-4 py-1.5 text-xs font-bold"
-                  >
-                    ← {t(lang, 'panel.back')}
-                  </button>
-                  <h2 className="mt-3 text-xl font-bold">
-                    {t(lang, MODULES.find((m) => m.id === state.module)!.nameKey)}
-                  </h2>
-                </div>
+                <ModuleDetail
+                  lang={lang}
+                  module={state.module}
+                  onSelect={(id) => send({ type: 'SELECT', module: id })}
+                  onBack={() => send({ type: 'BACK' })}
+                />
               )}
             </GlassPanel>
           )}

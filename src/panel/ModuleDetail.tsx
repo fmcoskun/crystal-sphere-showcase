@@ -1,0 +1,69 @@
+import { MODULES, type ModuleId } from '../content/modules'
+import { t, type Lang } from '../i18n/dictionary'
+import { ModuleIcon } from './ModuleIcon'
+import { AutomationDemo } from './demos/AutomationDemo'
+import { PerformanceDemo } from './demos/PerformanceDemo'
+import { PlatformsDemo } from './demos/PlatformsDemo'
+import { SecurityDemo } from './demos/SecurityDemo'
+
+const DEMOS: Record<ModuleId, (p: { lang: Lang }) => React.JSX.Element> = {
+  automation: AutomationDemo,
+  security: SecurityDemo,
+  performance: PerformanceDemo,
+  platforms: PlatformsDemo,
+}
+
+export function ModuleDetail({
+  lang,
+  module,
+  onSelect,
+  onBack,
+}: {
+  lang: Lang
+  module: ModuleId
+  onSelect: (id: ModuleId) => void
+  onBack: () => void
+}) {
+  const def = MODULES.find((m) => m.id === module)!
+  const Demo = DEMOS[module]
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3 pr-14">
+        <ModuleIcon id={module} />
+        <div className="min-w-0">
+          <h2 className="truncate text-lg font-bold tracking-tight sm:text-xl">{t(lang, def.nameKey)}</h2>
+          <p className="truncate text-xs font-medium opacity-75">{t(lang, def.descKey)}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="crystal-row min-h-[40px] shrink-0 rounded-full px-3.5 text-xs font-bold"
+        >
+          ← {t(lang, 'panel.back')}
+        </button>
+        <div className="grid flex-1 grid-cols-4 gap-1 rounded-2xl border border-white/35 bg-black/10 p-1" role="tablist">
+          {MODULES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              aria-selected={m.id === module}
+              aria-label={t(lang, m.nameKey)}
+              onClick={() => onSelect(m.id)}
+              className={`grid min-h-[36px] place-items-center rounded-xl transition ${
+                m.id === module ? 'bg-white/75 shadow-sm' : 'opacity-60 hover:opacity-100'
+              }`}
+            >
+              <span className="scale-[0.7]">
+                <ModuleIcon id={m.id} />
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <Demo key={module} lang={lang} />
+    </div>
+  )
+}
