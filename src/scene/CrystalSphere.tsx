@@ -22,7 +22,7 @@ export function CrystalSphere({
     const away = presence === 'away'
     const s = THREE.MathUtils.damp(g.scale.x, away ? 0.32 : 1, 6, delta)
     g.scale.setScalar(s)
-    g.position.y = THREE.MathUtils.damp(g.position.y, away ? 2.1 : 0, 6, delta)
+    g.position.y = THREE.MathUtils.damp(g.position.y, away ? 1.55 : 0, 6, delta)
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, light.current.x * 0.03, 4, delta)
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, light.current.y * 0.03, 4, delta)
   })

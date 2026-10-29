@@ -1,0 +1,91 @@
+/* Glass surfaces, ported from the prototype's crystal-surface / crystal-row optics. */
+.crystal-surface {
+  position: relative;
+  background-color: rgba(148, 147, 143, 0.72);
+  background-image:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.14) 28%, transparent 55%),
+    radial-gradient(ellipse at 18% 92%, rgba(255, 255, 255, 0.65), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(255, 255, 255, 0.45), transparent 50%),
+    radial-gradient(ellipse at 15% 15%, rgba(45, 45, 43, 0.28), transparent 58%),
+    radial-gradient(ellipse at 92% 35%, rgba(57, 57, 57, 0.35), transparent 52%);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    -18px 28px 38px -6px rgba(0, 0, 0, 0.36),
+    -35px 48px 50px -15px rgba(255, 255, 255, 0.55),
+    inset -5px 5px 8px 0 rgba(0, 0, 0, 0.16),
+    inset -30px 15px 22px -10px rgba(0, 0, 0, 0.22),
+    inset -10px 10px 30px -5px rgba(0, 0, 0, 0.18),
+    inset 12px -20px 6px -20px rgba(255, 255, 255, 0.92),
+    inset 10px -32px 24px -18px rgba(255, 255, 255, 0.65),
+    inset 50px -50px 25px -10px rgba(108, 108, 108, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+}
+[data-theme='dark'] .crystal-surface {
+  background-color: rgba(88, 88, 84, 0.76);
+}
+
+.crystal-window-glint {
+  position: absolute;
+  top: 16px;
+  right: 34px;
+  width: 44px;
+  height: 54px;
+  border-radius: 32px 0 0 0 / 14px 0 0 0;
+  transform: perspective(100px) scaleY(0.45) rotateX(-5deg) rotateY(-15deg) rotateZ(25deg);
+  background-color: rgba(255, 255, 255, 0.92);
+  background-image:
+    linear-gradient(to right, transparent 20%, rgba(255, 255, 255, 0.6), transparent 100%),
+    linear-gradient(to top, transparent 72%, rgba(0, 0, 0, 0.28) 82%, transparent 92%);
+  filter: blur(0.4px);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.crystal-row {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.14) 55%, rgba(0, 0, 0, 0.06) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.12),
+    inset -2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset 3px -5px 10px rgba(255, 255, 255, 0.65);
+  transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+.crystal-row:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.52) 0%, rgba(255, 255, 255, 0.24) 60%, rgba(255, 255, 255, 0.12) 100%);
+  border-color: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px) scale(1.012);
+}
+.crystal-row:active {
+  transform: scale(0.985);
+}
+@media (prefers-reduced-motion: reduce) {
+  .crystal-row,
+  .crystal-row:hover,
+  .crystal-row:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+.mini-crystal-orb {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--studio-bg);
+  background-image:
+    radial-gradient(circle at 65% 20%, rgba(255, 255, 255, 0.85), transparent 45%),
+    radial-gradient(ellipse at 25% 85%, rgba(255, 255, 255, 0.85), transparent 55%),
+    radial-gradient(ellipse at 20% 25%, rgba(0, 0, 0, 0.32), transparent 55%);
+  box-shadow:
+    -4px 8px 12px rgba(0, 0, 0, 0.32),
+    inset -3px 3px 6px rgba(0, 0, 0, 0.25),
+    inset 4px -6px 8px rgba(255, 255, 255, 0.85);
+}

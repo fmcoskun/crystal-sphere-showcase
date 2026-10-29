@@ -1,12 +1,7 @@
-import { SphereHost } from './scene/SphereHost'
+import { Stage } from './Stage'
+import { loadLang } from './i18n/lang'
 import { DEFAULT_OPTICS } from './state/optics'
-import { useLightOffset } from './scene/useLightOffset'
 
 export default function App() {
-  const { offset } = useLightOffset()
-  return (
-    <main className="fixed inset-0">
-      <SphereHost theme="light" optics={DEFAULT_OPTICS} presence="full" light={offset} />
-    </main>
-  )
+  return <Stage lang={loadLang()} theme="light" optics={DEFAULT_OPTICS} />
 }
