@@ -8,18 +8,22 @@ import { pointerToLight, requestTilt, tiltToLight, type Offset } from './input'
  */
 export function useLightOffset() {
   const offset = useRef<Offset>({ x: 0, y: 0 })
-  const tiltOn = useRef(false)
+  // "Allowed" means we may listen; "active" only once a real sensor reading arrives,
+  // so desktops (API present, no gyroscope) keep pointer control.
+  const tiltAllowed = useRef(false)
+  const tiltActive = useRef(false)
 
   useEffect(() => {
     const onPointer = (e: PointerEvent | MouseEvent) => {
-      if (tiltOn.current) return
+      if (tiltActive.current) return
       offset.current = pointerToLight(
         { x: e.clientX, y: e.clientY },
         { w: window.innerWidth, h: window.innerHeight },
       )
     }
     const onTilt = (e: DeviceOrientationEvent) => {
-      if (!tiltOn.current || e.beta === null || e.gamma === null) return
+      if (!tiltAllowed.current || e.beta === null || e.gamma === null) return
+      tiltActive.current = true
       offset.current = tiltToLight({ beta: e.beta, gamma: e.gamma })
     }
     window.addEventListener('pointermove', onPointer)
@@ -32,7 +36,7 @@ export function useLightOffset() {
 
   const enableTilt = useCallback(async () => {
     const result = await requestTilt()
-    tiltOn.current = result === 'granted'
+    tiltAllowed.current = result === 'granted'
     return result
   }, [])
 

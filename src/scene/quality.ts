@@ -46,3 +46,30 @@ export function detectCaps(): Caps {
     deviceMemory: nav.deviceMemory,
   }
 }
+
+/**
+ * Averages frame times over fixed windows for tier decisions. Discards the first
+ * `warmupWindows` (shader compile, env-map render) and any frame longer than
+ * `maxDeltaMs` (a hidden tab resuming), so one stall can't lower quality for good.
+ */
+export function createFrameSampler(windowSize = 60, maxDeltaMs = 100, warmupWindows = 1) {
+  let n = 0
+  let sum = 0
+  let skip = warmupWindows
+  return {
+    push(deltaMs: number): number | null {
+      if (deltaMs > maxDeltaMs) return null
+      n += 1
+      sum += deltaMs
+      if (n < windowSize) return null
+      const avg = sum / n
+      n = 0
+      sum = 0
+      if (skip > 0) {
+        skip -= 1
+        return null
+      }
+      return avg
+    },
+  }
+}

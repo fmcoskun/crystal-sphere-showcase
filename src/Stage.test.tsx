@@ -51,3 +51,15 @@ test('events during the spring are ignored, then accepted', async () => {
   fireEvent.keyDown(window, { key: 'Escape' })
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
 })
+
+test('opening moves focus into the dialog and closing returns it to the trigger', async () => {
+  render(<Stage lang="en" {...props} />)
+  opener('en').focus()
+  await userEvent.keyboard('{Enter}')
+  const dialog = await screen.findByRole('dialog')
+  expect(dialog).toHaveAttribute('aria-modal', 'true')
+  expect(dialog.contains(document.activeElement)).toBe(true)
+  await settle()
+  fireEvent.keyDown(window, { key: 'Escape' })
+  await waitFor(() => expect(document.activeElement).toBe(opener('en')))
+})

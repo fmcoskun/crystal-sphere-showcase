@@ -57,8 +57,18 @@ export function Stage({ lang, theme, optics, forceRenderer }: Props) {
 
   const open = state.view !== 'orb'
 
+  // When the panel closes, the trigger re-mounts; give it focus back (not on first load).
+  const trigger = useRef<HTMLButtonElement>(null)
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (wasOpen.current && !open) trigger.current?.focus()
+    wasOpen.current = open
+  }, [open])
+
   return (
-    <main data-theme={theme} className="fixed inset-0 overflow-hidden">
+    // touch-action: none keeps finger drags on the stage from being claimed for panning,
+    // so pointermove keeps steering the light on phones.
+    <main data-theme={theme} className="fixed inset-0 touch-none overflow-hidden">
       <SphereHost
         theme={theme}
         optics={optics}
@@ -70,6 +80,7 @@ export function Stage({ lang, theme, optics, forceRenderer }: Props) {
       {!open && (
         <div className="absolute inset-x-0 bottom-[10vh] flex justify-center">
           <button
+            ref={trigger}
             type="button"
             aria-label={t(lang, 'trigger.open')}
             onClick={() => {
@@ -91,6 +102,7 @@ export function Stage({ lang, theme, optics, forceRenderer }: Props) {
               label={t(lang, 'panel.title')}
               closeLabel={t(lang, 'panel.close')}
               onClose={() => send({ type: 'CLOSE' })}
+              focusKey={state.view === 'detail' ? `detail:${state.module}` : state.view}
             >
               {state.view === 'list' && (
                 <ModuleList lang={lang} onSelect={(id) => send({ type: 'SELECT', module: id })} />

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SphereHost } from './SphereHost'
 import { DEFAULT_OPTICS } from '../state/optics'
@@ -24,4 +24,18 @@ test('webgl renderer falls back to css when the context is lost', async () => {
   const { container } = render(<SphereHost {...base} forceRenderer="webgl" />)
   await userEvent.click(await screen.findByText('lose-context'))
   expect(container.querySelector('[data-renderer="css"]')).not.toBeNull()
+})
+
+test('a crash inside the WebGL scene falls back to the CSS sphere', async () => {
+  vi.doMock('./CrystalScene', () => ({
+    default: () => {
+      throw new Error('shader compile failed')
+    },
+  }))
+  vi.resetModules()
+  const { SphereHost: Fresh } = await import('./SphereHost')
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  const { container } = render(<Fresh {...base} forceRenderer="webgl" />)
+  // The host itself must switch to CSS (not just show CSS as the Suspense fallback).
+  await waitFor(() => expect(container.firstElementChild?.getAttribute('data-renderer')).toBe('css'))
 })

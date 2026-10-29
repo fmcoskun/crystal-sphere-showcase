@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
+import { Component, lazy, Suspense, useCallback, useState, type ReactNode } from 'react'
 import { CssCrystal } from '../fallback/CssCrystal'
 import type { Optics } from '../state/optics'
 import type { Theme } from '../state/theme'
@@ -12,6 +12,20 @@ interface Props {
   presence: 'full' | 'away'
   light: { current: { x: number; y: number } }
   forceRenderer?: 'webgl' | 'css'
+}
+
+/** A failed chunk load or a Canvas/shader error must not blank the page: drop to CSS. */
+class SceneBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch() {
+    this.props.onError()
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
 }
 
 function pickRenderer(force?: 'webgl' | 'css'): 'webgl' | 'css' {
@@ -35,17 +49,19 @@ export function SphereHost({ theme, optics, presence, light, forceRenderer }: Pr
 
   return (
     <div data-renderer="webgl" className="fixed inset-0">
-      <Suspense fallback={css}>
-        <CrystalScene
-          tier={tier}
-          theme={theme}
-          optics={optics}
-          light={light}
-          presence={presence}
-          onTierNeeded={onTierNeeded}
-          onContextLost={onContextLost}
-        />
-      </Suspense>
+      <SceneBoundary onError={onContextLost}>
+        <Suspense fallback={css}>
+          <CrystalScene
+            tier={tier}
+            theme={theme}
+            optics={optics}
+            light={light}
+            presence={presence}
+            onTierNeeded={onTierNeeded}
+            onContextLost={onContextLost}
+          />
+        </Suspense>
+      </SceneBoundary>
     </div>
   )
 }

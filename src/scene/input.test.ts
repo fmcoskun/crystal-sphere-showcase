@@ -42,3 +42,13 @@ test('useLightOffset follows pointer movement', () => {
   window.dispatchEvent(new MouseEvent('pointermove', { clientX: 100, clientY: 0 }))
   expect(result.current.offset.current).toEqual({ x: 12, y: -12 })
 })
+
+test('pointer keeps moving the light when tilt is allowed but no sensor reading arrives', async () => {
+  vi.stubGlobal('DeviceOrientationEvent', function DeviceOrientationEvent() {})
+  Object.defineProperty(window, 'innerWidth', { value: 100, configurable: true })
+  Object.defineProperty(window, 'innerHeight', { value: 100, configurable: true })
+  const { result } = renderHook(() => useLightOffset())
+  await result.current.enableTilt()
+  window.dispatchEvent(new MouseEvent('pointermove', { clientX: 0, clientY: 100 }))
+  expect(result.current.offset.current).toEqual({ x: -12, y: 12 })
+})

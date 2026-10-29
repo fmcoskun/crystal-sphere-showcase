@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { chooseRenderer, initialTier, nextTier, type Caps } from './quality'
+import { chooseRenderer, createFrameSampler, initialTier, nextTier, type Caps } from './quality'
 
 const caps = (over: Partial<Caps>): Caps => ({
   webgl: true,
@@ -31,4 +31,13 @@ test('nextTier steps down on slow frames, never below 0, never up', () => {
   expect(nextTier(3, 25)).toBe(2)
   expect(nextTier(0, 50)).toBe(0)
   expect(nextTier(2, 10)).toBe(2)
+})
+
+test('frame sampler skips the warm-up window and ignores hidden-tab gaps', () => {
+  const s = createFrameSampler(3, 100, 1)
+  // warm-up window (shader compile) is discarded
+  expect([s.push(50), s.push(50), s.push(50)]).toEqual([null, null, null])
+  // a 5 s gap from a hidden tab is ignored entirely
+  expect(s.push(5000)).toBeNull()
+  expect([s.push(10), s.push(10), s.push(16)]).toEqual([null, null, 12])
 })
