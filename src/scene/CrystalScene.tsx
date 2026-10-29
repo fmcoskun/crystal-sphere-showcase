@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useEffect, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { THEME_COLORS, type Theme } from '../state/theme'
 import type { Optics } from '../state/optics'
 import { TIERS, type Tier } from './quality'
@@ -21,6 +21,20 @@ function FrameMeter({ onSlow }: { onSlow: (avgMs: number) => void }) {
       a.sum = 0
     }
   })
+  return null
+}
+
+const BASE_DISTANCE = 7
+// Keeps the 3-unit sphere within ~78% of the width on portrait screens (fov 35°).
+const PORTRAIT_FIT = 6.1
+
+function FitCamera() {
+  const camera = useThree((s) => s.camera)
+  const aspect = useThree((s) => s.size.width / s.size.height)
+  useEffect(() => {
+    camera.position.z = Math.max(BASE_DISTANCE, PORTRAIT_FIT / aspect)
+    camera.updateProjectionMatrix()
+  }, [camera, aspect])
   return null
 }
 
@@ -51,6 +65,7 @@ export default function CrystalScene(p: CrystalSceneProps) {
         })
       }}
     >
+      <FitCamera />
       <color attach="background" args={[THEME_COLORS[p.theme].bg]} />
       <Lights glare={p.optics.glare} />
       <Floor optics={p.optics} light={p.light} />
