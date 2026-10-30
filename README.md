@@ -1,6 +1,35 @@
 # CrystalCore — Crystal Sphere Showcase
 
-A skills showcase for a fictional product: a physically based glass sphere (React + Three.js) that springs into a glass control panel with four live micro-demos. Turkish and English, desktop and phone.
+An interactive liquid-glass crystal sphere built with React, Three.js and React Three Fiber. The sphere refracts a studio backdrop in real time, casts a caustic, ripples where you touch it, and springs open into a glass control panel with four live micro-demos for a fictional product. Turkish and English, desktop and phone.
+
+![Demo: the pointer ripples the glass sphere and moves its caustic, then the panel opens and walks through the four modules](docs/demo.gif)
+
+## What you can do
+
+- **Move the pointer or drag a finger** over the stage: the sphere tilts towards the light, its surface ripples where the pointer crosses it, and the caustic on the backdrop follows. On phones that allow it, tilting the device does the same.
+- **Press "Start the system"**: the sphere shrinks and parks at the top while a glass panel springs open with four modules.
+- **Open a module** to try its micro-demo. Smart Automation toggles rules and adds up the hours saved, Security & Infrastructure runs an integrity scan, Live Performance switches between turbo and balanced modes, and Platforms & API shows and copies install commands. The icon tabs switch between modules without leaving the panel.
+- **Corner controls**: switch language (TR/EN) and theme (light/dark studio), or open the studio sliders for light angle, caustic strength and window glare.
+
+Everything in the demos is made up; commands point at the reserved `.example` domain.
+
+## How it works
+
+**One state machine drives the page.** `stageReducer` (`src/state/stage.ts`) moves between three views: the sphere on its own, the module list, and a module's detail. The sphere and the panel are independent components that both read that state. Input arriving while the opening spring runs (650 ms) is ignored, so rapid taps can't tangle the transition.
+
+**The sphere** (`src/scene/CrystalSphere.tsx`) is a mesh with drei's `MeshTransmissionMaterial`. It renders the scene behind it into a buffer and refracts it with an index of 1.52, chromatic aberration and a thin backside, which gives the glass look. The lighting is a hand-built studio of `Lightformer` softboxes (`Lights.tsx`) rather than an HDRI, with a sharp window light top-right that gives the sphere its signature highlight.
+
+**The liquid surface** (`src/scene/liquid.ts`) is computed on the CPU every frame. Each vertex is pushed along its own direction by a slow "breathing" noise plus up to four expanding ripples. A ripple starts where the pointer ray meets the sphere, an analytic ray–sphere hit rather than a mesh raycast. The sphere's seam is welded so the per-frame normals stay smooth. Reduced-motion users get a still sphere.
+
+**The caustic** comes in two kinds. On capable devices drei's `Caustics` (`CausticsLayer.tsx`) traces the sphere's refraction from a light placed by the angle slider. Its projection plane is turned to become the backdrop and placed at the ball lens's focal distance (f = nR / 2(n − 1) ≈ 2.2), where the light gathers into a bright spot. Lighter devices get a painted caustic texture (`CausticFloor.tsx`). Either one lives inside the sphere's group, so it shrinks and moves with the sphere when the panel opens.
+
+**Postprocessing** (`Effects.tsx`) adds bloom on the highlights, SMAA, a little film grain and Khronos PBR Neutral tone mapping. Tone mapping would also shift the flat studio grey, so `toneMap.ts` runs the background colour through the inverse of the Neutral curve: the grey comes out exactly `#94938f` (light) or `#4e4e4b` (dark).
+
+**Quality adapts to the device** (`src/scene/quality.ts`). Phones start at tier 2 and desktops at tier 3. A frame meter averages frame times and steps the tier down when frames run slow: lower pixel ratio, fewer refraction samples, then no real caustics or liquid surface, and finally no postprocessing. Devices without WebGL, or very weak ones, get a pure-CSS sphere instead (`src/fallback/`). The same CSS sphere shows while the WebGL code loads, and it takes over if the GPU context is lost.
+
+**The panel** (`src/panel/`) is real, accessible HTML with CSS glass, not part of the 3D scene. The four demos are stacked in one grid cell so the panel keeps the height of the tallest one across tabs. Hidden demos are `inert`, `aria-hidden` and transparent, so they can't be focused or read and don't show through.
+
+**Loading** (`vite.config.ts`): the first paint needs only the app and React (about 125 kB gzip). three.js, React Three Fiber, drei and postprocessing load lazily in separate, long-cacheable chunks.
 
 ## Run
 
@@ -27,7 +56,7 @@ npm run visual -- --query "renderer=webgl&tier=1" --check bg --theme dark
 npm run visual -- --open --shot shots/                        # screenshots, panel open
 ```
 
-- `panel`: the dialog keeps one width and height across the four module tabs.
+- `panel`: the dialog keeps one width and height across the four module tabs, the previous demo is gone 60 ms after a switch, and nothing scrolls sideways on any Platforms sub-tab.
 - `bg`: the studio grey in two corners is the theme colour within ±3 per channel, whatever the tier. With `--open`, also left of the panel, where a caustic left behind by the parked sphere would show.
 - `tone`: the inside of the sphere matches between tier 0 (no postprocessing) and tier 1 within ±3. Needs the dev server, since `?tier=` is dev-only.
 
@@ -71,9 +100,9 @@ Phones start at tier 2, desktops at 3; slow frames step the tier down. Reduced m
 
 ## Verification status
 
-- Unit tests: 79 passing (logic, state, i18n, panel flow, focus, fallbacks, frame sampling, tone-map compensation, liquid surface, caustic geometry).
+- Unit tests: 82 passing (logic, state, i18n, panel flow, focus, fallbacks, frame sampling, tone-map compensation, liquid surface, caustic geometry).
 - Visual checks (headless Chrome, production build, 1280×800 and 390×844): panel size fixed across tabs; studio background exact in light and dark at tiers 0, 1 and 3.
 - Checked in a desktop browser (800×600) and a 375×812 mobile emulation: sphere, caustic, panel spring, four demos, dark theme, studio sliders.
-- Real phone check (2026-10-30, over the LAN dev server): sphere fit, touch drag, smoothness, panel, four demos and corner controls all worked.
+- Real phone check (2026-10-30, over the LAN): sphere fit, touch drag, smoothness, panel, four demos and corner controls all worked; repeated on the production build after the liquid surface, caustics and postprocessing landed.
 - **Not yet checked:** iOS tilt (motion sensors need HTTPS; the LAN test was plain http).
 - **Not deployed.** `dist/` is a static site; Vercel or Netlify can serve it as-is once an account is connected.
