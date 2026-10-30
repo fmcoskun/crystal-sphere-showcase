@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { THEME_COLORS, type Theme } from '../state/theme'
 import type { Optics } from '../state/optics'
+import { BASE_DISTANCE, CAMERA_FOV, PORTRAIT_FIT } from './camera'
 import { createFrameSampler, TIERS, type Tier } from './quality'
 import { CausticFloor } from './CausticFloor'
 import { CrystalSphere } from './CrystalSphere'
@@ -16,10 +17,6 @@ function FrameMeter({ onSlow }: { onSlow: (avgMs: number) => void }) {
   return null
 }
 
-const BASE_DISTANCE = 7
-// Keeps the 3-unit sphere within ~78% of the width on portrait screens (fov 35°).
-const PORTRAIT_FIT = 6.1
-
 function FitCamera() {
   const camera = useThree((s) => s.camera)
   const aspect = useThree((s) => s.size.width / s.size.height)
@@ -28,10 +25,6 @@ function FitCamera() {
     camera.updateProjectionMatrix()
   }, [camera, aspect])
   return null
-}
-
-function Floor({ optics, light }: { optics: Optics; light: { current: { x: number; y: number } } }) {
-  return <CausticFloor angle={optics.angle} intensity={optics.caustic / 100} offset={light.current} />
 }
 
 export interface CrystalSceneProps {
@@ -48,7 +41,7 @@ export default function CrystalScene(p: CrystalSceneProps) {
   return (
     <Canvas
       dpr={TIERS[p.tier].dpr}
-      camera={{ position: [0, 0, 7], fov: 35 }}
+      camera={{ position: [0, 0, BASE_DISTANCE], fov: CAMERA_FOV }}
       gl={{ antialias: true }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', (e) => {
@@ -60,7 +53,7 @@ export default function CrystalScene(p: CrystalSceneProps) {
       <FitCamera />
       <color attach="background" args={[THEME_COLORS[p.theme].bg]} />
       <Lights theme={p.theme} glare={p.optics.glare} />
-      <Floor optics={p.optics} light={p.light} />
+      <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
       <CrystalSphere tier={p.tier} presence={p.presence} light={p.light} />
       <FrameMeter onSlow={p.onTierNeeded} />
     </Canvas>

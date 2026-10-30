@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MeshTransmissionMaterial } from '@react-three/drei'
 import * as THREE from 'three'
+import { visibleHeight } from './camera'
 import { TIERS, type Tier } from './quality'
 
 export function CrystalSphere({
@@ -18,13 +19,13 @@ export function CrystalSphere({
 
   useFrame(({ camera }, delta) => {
     // Visible height at the sphere's depth; the "away" sphere parks near the top edge.
-    const visibleHeight = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(35 / 2))
+    const height = visibleHeight(camera.position.z)
     const g = group.current
     if (!g) return
     const away = presence === 'away'
     const s = THREE.MathUtils.damp(g.scale.x, away ? 0.32 : 1, 6, delta)
     g.scale.setScalar(s)
-    g.position.y = THREE.MathUtils.damp(g.position.y, away ? visibleHeight * 0.33 : 0, 6, delta)
+    g.position.y = THREE.MathUtils.damp(g.position.y, away ? height * 0.33 : 0, 6, delta)
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, light.current.x * 0.03, 4, delta)
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, light.current.y * 0.03, 4, delta)
   })
