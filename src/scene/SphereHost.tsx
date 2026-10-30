@@ -50,7 +50,7 @@ export function SphereHost({ theme, optics, presence, light, forceRenderer }: Pr
   if (renderer === 'css') return css
 
   return (
-    <div data-renderer="webgl" className="fixed inset-0">
+    <div data-renderer="webgl" data-tier={tier} className="fixed inset-0">
       <SceneBoundary onError={onContextLost}>
         <Suspense fallback={css}>
           <CrystalScene

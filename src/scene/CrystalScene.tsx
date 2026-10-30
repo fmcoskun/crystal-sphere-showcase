@@ -1,12 +1,15 @@
 import { useEffect, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import * as THREE from 'three'
 import { THEME_COLORS, type Theme } from '../state/theme'
 import type { Optics } from '../state/optics'
 import { BASE_DISTANCE, CAMERA_FOV, PORTRAIT_FIT } from './camera'
 import { createFrameSampler, TIERS, type Tier } from './quality'
 import { CausticFloor } from './CausticFloor'
 import { CrystalSphere } from './CrystalSphere'
+import { Effects } from './Effects'
 import { Lights } from './Lights'
+import { backgroundFor } from './toneMap'
 
 function FrameMeter({ onSlow }: { onSlow: (avgMs: number) => void }) {
   const sampler = useRef(createFrameSampler())
@@ -42,7 +45,7 @@ export default function CrystalScene(p: CrystalSceneProps) {
     <Canvas
       dpr={TIERS[p.tier].dpr}
       camera={{ position: [0, 0, BASE_DISTANCE], fov: CAMERA_FOV }}
-      gl={{ antialias: true }}
+      gl={{ antialias: true, toneMapping: THREE.NeutralToneMapping }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault()
@@ -51,10 +54,11 @@ export default function CrystalScene(p: CrystalSceneProps) {
       }}
     >
       <FitCamera />
-      <color attach="background" args={[THEME_COLORS[p.theme].bg]} />
+      <color attach="background" args={[backgroundFor(THEME_COLORS[p.theme].bg, TIERS[p.tier].post)]} />
       <Lights theme={p.theme} glare={p.optics.glare} />
       <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
       <CrystalSphere tier={p.tier} presence={p.presence} light={p.light} />
+      <Effects mode={TIERS[p.tier].post} />
       <FrameMeter onSlow={p.onTierNeeded} />
     </Canvas>
   )

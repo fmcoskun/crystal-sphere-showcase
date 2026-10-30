@@ -120,7 +120,8 @@ try {
       for (const [x, y] of [[16, 16], [w - 25, h - 25]]) {
         const got = await averageColor(send, ev, x, y)
         const ok = got.every((v, i) => Math.abs(v - want[i]) <= 3)
-        report({ check: 'bg', size, query, theme, at: [x, y], want, got, ok })
+        const tier = await ev(`document.querySelector('[data-tier]')?.dataset.tier ?? null`)
+        report({ check: 'bg', size, query, theme, tier, at: [x, y], want, got, ok })
       }
     }
 
