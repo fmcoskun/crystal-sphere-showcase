@@ -42,5 +42,6 @@ The WebGL chunk is not preloaded; the CSS sphere shows while it loads.
 
 - Unit tests: 53 passing (logic, state, i18n, panel flow, focus, fallbacks, frame sampling).
 - Checked in a desktop browser (800×600) and a 375×812 mobile emulation: sphere, caustic, panel spring, four demos, dark theme, studio sliders.
-- **Not yet checked:** a real mid-range phone (frame rate, iOS tilt permission prompt), and `prefers-reduced-motion` in a real browser.
+- Real phone check (2026-10-30, over the LAN dev server): sphere fit, touch drag, smoothness, panel, four demos and corner controls all worked.
+- **Not yet checked:** iOS tilt (motion sensors need HTTPS; the LAN test was plain http).
 - **Not deployed.** `dist/` is a static site; Vercel or Netlify can serve it as-is once an account is connected.
