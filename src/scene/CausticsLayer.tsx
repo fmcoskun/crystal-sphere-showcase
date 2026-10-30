@@ -3,9 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { Caustics } from '@react-three/drei'
 import type * as THREE from 'three'
 import { causticLight } from './CausticFloor'
-import { LIQUID } from './liquid'
 
-// Distance from the sphere centre to the backdrop the caustic lands on (the fake one sits at −1.5).
+// Distance from the sphere centre to the backdrop the caustic lands on: the ball-lens focus,
+// f = nR / 2(n − 1) ≈ 2.19 for n 1.52, R 1.5, where the refracted light gathers into a hot spot.
 const BACKDROP = 2.2
 
 /**

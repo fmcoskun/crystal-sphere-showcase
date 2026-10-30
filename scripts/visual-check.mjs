@@ -91,6 +91,17 @@ async function averageColor(send, ev, x, y, n = 9) {
     const k = d.length / 4; resolve(s.map((v) => Math.round(v / k))) }; img.src = 'data:image/png;base64,${data}' })`)
 }
 
+// The app ignores input while the panel spring runs, so a click is repeated until `until` matches.
+async function clickUntil(ev, selector, until, timeoutMs = 4000) {
+  const end = Date.now() + timeoutMs
+  while (Date.now() < end) {
+    if (await ev(`!!document.querySelector(${JSON.stringify(selector)})`)) await ev(click(selector))
+    await sleep(400)
+    if (await ev(`!!document.querySelector(${JSON.stringify(until)})`)) return
+  }
+  throw new Error(`clicking ${selector} never produced ${until}`)
+}
+
 const hexToRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
 
 let failed = false
@@ -126,13 +137,13 @@ try {
     }
 
     if (check === 'panel' || check === 'all' || open) {
-      await ev(click(`button[aria-label="${LABEL.trigger}"]`))
-      await sleep(900)
+      await clickUntil(ev, `button[aria-label="${LABEL.trigger}"]`, '[role=dialog]')
+      await sleep(700)
     }
 
     if (check === 'panel' || check === 'all') {
-      await ev(click('[role=dialog] button.w-full'))
-      await sleep(900)
+      await clickUntil(ev, '[role=dialog] button.w-full', '[role=tab]')
+      await sleep(700)
       const boxes = []
       for (let i = 0; i < 4; i++) {
         await ev(`document.querySelectorAll('[role=tab]')[${i}].click()`)
