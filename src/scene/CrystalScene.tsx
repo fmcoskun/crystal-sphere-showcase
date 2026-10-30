@@ -36,6 +36,7 @@ export interface CrystalSceneProps {
   optics: Optics
   light: { current: { x: number; y: number } }
   presence: 'full' | 'away'
+  reducedMotion: boolean
   onTierNeeded: (avgFrameMs: number) => void
   onContextLost: () => void
 }
@@ -57,7 +58,7 @@ export default function CrystalScene(p: CrystalSceneProps) {
       <color attach="background" args={[backgroundFor(THEME_COLORS[p.theme].bg, TIERS[p.tier].post)]} />
       <Lights theme={p.theme} glare={p.optics.glare} />
       <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
-      <CrystalSphere tier={p.tier} presence={p.presence} light={p.light} />
+      <CrystalSphere tier={p.tier} presence={p.presence} light={p.light} reducedMotion={p.reducedMotion} />
       <Effects mode={TIERS[p.tier].post} />
       <FrameMeter onSlow={p.onTierNeeded} />
     </Canvas>

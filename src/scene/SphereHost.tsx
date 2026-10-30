@@ -1,4 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useState, type ReactNode } from 'react'
+import { useReducedMotion } from 'motion/react'
 import { CssCrystal } from '../fallback/CssCrystal'
 import type { Optics } from '../state/optics'
 import type { Theme } from '../state/theme'
@@ -43,6 +44,8 @@ export function SphereHost({ theme, optics, presence, light, forceRenderer }: Pr
     () => (import.meta.env.DEV ? forcedTier(window.location.search) : null) ?? initialTier(detectCaps()),
   )
 
+  const reducedMotion = useReducedMotion() ?? false
+
   const onTierNeeded = useCallback((avgMs: number) => setTier((t) => nextTier(t, avgMs)), [])
   const onContextLost = useCallback(() => setRenderer('css'), [])
 
@@ -59,6 +62,7 @@ export function SphereHost({ theme, optics, presence, light, forceRenderer }: Pr
             optics={optics}
             light={light}
             presence={presence}
+            reducedMotion={reducedMotion}
             onTierNeeded={onTierNeeded}
             onContextLost={onContextLost}
           />
