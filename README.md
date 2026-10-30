@@ -2,7 +2,15 @@
 
 An interactive liquid-glass crystal sphere built with React, Three.js and React Three Fiber. The sphere refracts a studio backdrop in real time, casts a caustic, ripples where you touch it, and springs open into a glass control panel with four live micro-demos for a fictional product. Turkish and English, desktop and phone.
 
-![Demo: the pointer ripples the glass sphere and moves its caustic, then the panel opens and walks through the four modules](docs/demo.gif)
+![The glass sphere on the light studio backdrop, with its caustic falling to the lower left](docs/screenshots/hero.png)
+
+| Pointer ripples and the caustic they cast | Dark studio |
+| --- | --- |
+| ![Ripples spreading across the sphere and rings in its caustic](docs/screenshots/ripples.png) | ![The sphere on the dark studio backdrop](docs/screenshots/dark.png) |
+| **Module panel** | **Smart Automation** |
+| ![The glass panel listing the four modules, the sphere parked above it](docs/screenshots/modules.png) | ![Smart Automation demo with green rule switches and hours saved](docs/screenshots/automation.png) |
+| **Platforms & API** | **On a phone** |
+| ![Platforms & API demo showing a wrapped REST API command](docs/screenshots/platforms.png) | <img src="docs/screenshots/phone-security.png" alt="Security & Infrastructure demo on a 390 px wide phone screen" width="240"> |
 
 ## What you can do
 
