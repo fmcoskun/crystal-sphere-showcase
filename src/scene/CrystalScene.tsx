@@ -57,8 +57,13 @@ export default function CrystalScene(p: CrystalSceneProps) {
       <FitCamera />
       <color attach="background" args={[backgroundFor(THEME_COLORS[p.theme].bg, TIERS[p.tier].post)]} />
       <Lights theme={p.theme} glare={p.optics.glare} />
-      <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
-      <CrystalSphere tier={p.tier} presence={p.presence} light={p.light} reducedMotion={p.reducedMotion} />
+      {TIERS[p.tier].caustics === 0 && (
+        <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
+      )}
+      <CrystalSphere
+        tier={p.tier} presence={p.presence} light={p.light} reducedMotion={p.reducedMotion}
+        optics={p.optics}
+      />
       <Effects mode={TIERS[p.tier].post} />
       <FrameMeter onSlow={p.onTierNeeded} />
     </Canvas>

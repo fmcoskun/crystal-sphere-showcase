@@ -31,6 +31,19 @@ export function causticPlacement(angleDeg: number, offset: { x: number; y: numbe
   }
 }
 
+/**
+ * Light position for the real caustics, in the local space of the Caustics group, which is
+ * turned +90° about X so its "floor" becomes the backdrop: local = (world x, world z, −world y).
+ * The world light sits upper-right (by the angle) and in front of the sphere.
+ */
+export function causticLight(angleDeg: number, offset: { x: number; y: number }): [number, number, number] {
+  const a = THREE.MathUtils.degToRad(angleDeg)
+  const wx = Math.sin(a) * 5 + offset.x * 0.02
+  const wy = Math.cos(a) * 5 - offset.y * 0.02
+  const wz = 5
+  return [wx, wz, -wy]
+}
+
 /** Fake floor caustic: a bright tail plus a soft shadow, tilted by the light angle. */
 export function CausticFloor({
   angle,

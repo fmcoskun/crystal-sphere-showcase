@@ -3,7 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { MeshTransmissionMaterial } from '@react-three/drei'
 import * as THREE from 'three'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import type { Optics } from '../state/optics'
 import { visibleHeight } from './camera'
+import { CausticsLayer } from './CausticsLayer'
 import { addRipple, displaceSphere, LIQUID, type Ripple, type Vec3 } from './liquid'
 import { TIERS, type Tier } from './quality'
 
@@ -28,13 +30,16 @@ export function CrystalSphere({
   presence,
   light,
   reducedMotion,
+  optics,
 }: {
   tier: Tier
   presence: 'full' | 'away'
   light: { current: { x: number; y: number } }
   reducedMotion: boolean
+  optics: Optics
 }) {
   const group = useRef<THREE.Group>(null)
+  const tilt = useRef<THREE.Group>(null)
   const mesh = useRef<THREE.Mesh>(null)
   const q = TIERS[tier]
   const liquid = q.liquid && !reducedMotion
@@ -61,13 +66,14 @@ export function CrystalSphere({
     // Visible height at the sphere's depth; the "away" sphere parks near the top edge.
     const height = visibleHeight(camera.position.z)
     const g = group.current
-    if (!g) return
+    const r = tilt.current
+    if (!g || !r) return
     const away = presence === 'away'
     const s = THREE.MathUtils.damp(g.scale.x, away ? 0.32 : 1, 6, delta)
     g.scale.setScalar(s)
     g.position.y = THREE.MathUtils.damp(g.position.y, away ? height * 0.33 : 0, 6, delta)
-    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, light.current.x * 0.03, 4, delta)
-    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, light.current.y * 0.03, 4, delta)
+    r.rotation.y = THREE.MathUtils.damp(r.rotation.y, light.current.x * 0.03, 4, delta)
+    r.rotation.x = THREE.MathUtils.damp(r.rotation.x, light.current.y * 0.03, 4, delta)
 
     const m = mesh.current
     if (!liquid || !m) return
@@ -91,8 +97,10 @@ export function CrystalSphere({
     geometry.computeVertexNormals()
   })
 
-  return (
-    <group ref={group}>
+  // Outer group: the "away" move and scale, so the caustic travels with the sphere.
+  // Inner group: the small pointer tilt.
+  const sphere = (
+    <group ref={tilt}>
       <mesh ref={mesh} geometry={geometry}>
         <MeshTransmissionMaterial
           transmission={1}
@@ -112,6 +120,18 @@ export function CrystalSphere({
           attenuationDistance={6}
         />
       </mesh>
+    </group>
+  )
+
+  return (
+    <group ref={group}>
+      {q.caustics > 0 ? (
+        <CausticsLayer resolution={q.caustics} angle={optics.angle} intensity={optics.caustic / 100} light={light}>
+          {sphere}
+        </CausticsLayer>
+      ) : (
+        sphere
+      )}
     </group>
   )
 }
