@@ -29,7 +29,8 @@ npm run visual -- --open --shot shots/                        # screenshots, pan
 ```
 
 - `panel`: the dialog keeps one width and height across the four module tabs.
-- `bg`: the studio grey in two corners is the theme colour within ±3 per channel, whatever the tier.
+- `bg`: the studio grey in two corners is the theme colour within ±3 per channel, whatever the tier. With `--open`, also left of the panel, where a caustic left behind by the parked sphere would show.
+- `tone`: the inside of the sphere matches between tier 0 (no postprocessing) and tier 1 within ±3. Needs the dev server, since `?tier=` is dev-only.
 
 ## How it fits together
 

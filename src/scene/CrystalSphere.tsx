@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { Optics } from '../state/optics'
 import { visibleHeight } from './camera'
+import { CausticFloor } from './CausticFloor'
 import { CausticsLayer } from './CausticsLayer'
 import { addRipple, displaceSphere, LIQUID, type Ripple, type Vec3 } from './liquid'
 import { TIERS, type Tier } from './quality'
@@ -97,7 +98,7 @@ export function CrystalSphere({
     geometry.computeVertexNormals()
   })
 
-  // Outer group: the "away" move and scale, so the caustic travels with the sphere.
+  // Outer group: the "away" move and scale, so either caustic (real or fake) travels with the sphere.
   // Inner group: the small pointer tilt.
   const sphere = (
     <group ref={tilt}>
@@ -130,7 +131,10 @@ export function CrystalSphere({
           {sphere}
         </CausticsLayer>
       ) : (
-        sphere
+        <>
+          <CausticFloor angle={optics.angle} intensity={optics.caustic / 100} light={light} />
+          {sphere}
+        </>
       )}
     </group>
   )

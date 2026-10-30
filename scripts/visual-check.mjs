@@ -3,10 +3,12 @@
 // and a local Chrome (CHROME_PATH overrides the lookup).
 //
 //   node scripts/visual-check.mjs [--url http://localhost:5173] [--size 1280x800,390x844]
-//     [--query renderer=css] [--check panel|bg|all] [--theme light|dark] [--open] [--shot <dir>]
+//     [--query renderer=css] [--check panel|bg|tone|all] [--theme light|dark] [--open] [--shot <dir>]
 //
 // panel: the dialog keeps the same width and height on all four module tabs (±1 px).
-// bg:    the studio background in two screen corners is the theme colour (±3 per channel).
+// bg:    the studio background in two screen corners is the theme colour (±3 per channel);
+//        with --open, also the lower left, where a caustic left behind by the parked sphere would show.
+// tone:  the sphere's inside looks the same at tier 0 (no postprocessing) and tier 1 (±3); dev server only.
 // Prints one JSON line per result and exits 1 if any check fails.
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -111,26 +113,48 @@ const report = (r) => {
 }
 
 const { ws, send, ev } = await connect()
+
+async function load(w, h, q) {
+  await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 })
+  await send('Page.navigate', { url: base })
+  await sleep(800)
+  await ev(`localStorage.setItem('lang', 'en')`)
+  await send('Page.navigate', { url: `${base}/${q ? `?${q}` : ''}` })
+  // The WebGL chunk loads lazily and the first frames compile shaders.
+  await sleep(5000)
+  if (theme === 'dark') {
+    await ev(click(`button[aria-label="${LABEL.theme}"]`))
+    await sleep(1500)
+  }
+}
+
+const withTier = (t) => [query, `tier=${t}`].filter(Boolean).join('&')
+const close = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 3)
+
 try {
   for (const [w, h] of sizes) {
     const size = `${w}x${h}`
-    await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: w < 600 })
-    await send('Page.navigate', { url: base })
-    await sleep(800)
-    await ev(`localStorage.setItem('lang', 'en')`)
-    await send('Page.navigate', { url: `${base}/${query ? `?${query}` : ''}` })
-    // The WebGL chunk loads lazily and the first frames compile shaders.
-    await sleep(5000)
-    if (theme === 'dark') {
-      await ev(click(`button[aria-label="${LABEL.theme}"]`))
-      await sleep(1500)
+
+    if (check === 'tone') {
+      const spots = [[w / 2 - 4, h / 2 - 4], [w / 2 + 40, h / 2 - 60]].map(([x, y]) => [Math.round(x), Math.round(y)])
+      const seen = {}
+      for (const t of [0, 1]) {
+        await load(w, h, withTier(t))
+        seen[t] = []
+        for (const [x, y] of spots) seen[t].push(await averageColor(send, ev, x, y))
+      }
+      const ok = seen[0].every((c, i) => close(c, seen[1][i]))
+      report({ check: 'tone', size, query, theme, spots, tier0: seen[0], tier1: seen[1], ok })
+      continue
     }
+
+    await load(w, h, query)
 
     if (check === 'bg' || check === 'all') {
       const want = hexToRgb(THEME_HEX[theme])
       for (const [x, y] of [[16, 16], [w - 25, h - 25]]) {
         const got = await averageColor(send, ev, x, y)
-        const ok = got.every((v, i) => Math.abs(v - want[i]) <= 3)
+        const ok = close(got, want)
         const tier = await ev(`document.querySelector('[data-tier]')?.dataset.tier ?? null`)
         report({ check: 'bg', size, query, theme, tier, at: [x, y], want, got, ok })
       }
@@ -139,6 +163,19 @@ try {
     if (check === 'panel' || check === 'all' || open) {
       await clickUntil(ev, `button[aria-label="${LABEL.trigger}"]`, '[role=dialog]')
       await sleep(700)
+    }
+
+    if (open && (check === 'bg' || check === 'all')) {
+      // Sample left of the panel; on narrow screens the panel spans the width and there is nothing to see.
+      const left = await ev(`document.querySelector('[role=dialog]').getBoundingClientRect().left`)
+      if (left < 60) {
+        report({ check: 'bg-open', size, query, theme, skipped: 'panel spans the width', ok: true })
+      } else {
+        const at = [Math.round(Math.min(w * 0.2, left / 2)), Math.round(h * 0.82)]
+        const want = hexToRgb(THEME_HEX[theme])
+        const got = await averageColor(send, ev, ...at)
+        report({ check: 'bg-open', size, query, theme, at, want, got, ok: close(got, want) })
+      }
     }
 
     if (check === 'panel' || check === 'all') {

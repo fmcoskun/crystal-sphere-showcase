@@ -5,7 +5,6 @@ import { THEME_COLORS, type Theme } from '../state/theme'
 import type { Optics } from '../state/optics'
 import { BASE_DISTANCE, CAMERA_FOV, PORTRAIT_FIT } from './camera'
 import { createFrameSampler, TIERS, type Tier } from './quality'
-import { CausticFloor } from './CausticFloor'
 import { CrystalSphere } from './CrystalSphere'
 import { Effects } from './Effects'
 import { Lights } from './Lights'
@@ -46,7 +45,10 @@ export default function CrystalScene(p: CrystalSceneProps) {
     <Canvas
       dpr={TIERS[p.tier].dpr}
       camera={{ position: [0, 0, BASE_DISTANCE], fov: CAMERA_FOV }}
-      gl={{ antialias: true, toneMapping: THREE.NeutralToneMapping }}
+      // No renderer tone mapping: on tiers 1–3 the composer tone-maps the whole frame once (it forces
+      // this anyway). On tier 0 nothing is tone-mapped, so the sphere's transmission buffer (rendered
+      // untone-mapped by drei) and the clear colour stay on the same curve and the inside can't darken.
+      gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', (e) => {
           e.preventDefault()
@@ -57,9 +59,6 @@ export default function CrystalScene(p: CrystalSceneProps) {
       <FitCamera />
       <color attach="background" args={[backgroundFor(THEME_COLORS[p.theme].bg, TIERS[p.tier].post)]} />
       <Lights theme={p.theme} glare={p.optics.glare} />
-      {TIERS[p.tier].caustics === 0 && (
-        <CausticFloor angle={p.optics.angle} intensity={p.optics.caustic / 100} light={p.light} />
-      )}
       <CrystalSphere
         tier={p.tier} presence={p.presence} light={p.light} reducedMotion={p.reducedMotion}
         optics={p.optics}
