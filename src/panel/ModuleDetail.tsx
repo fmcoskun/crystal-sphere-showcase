@@ -62,8 +62,10 @@ export function ModuleDetail({
           ))}
         </div>
       </div>
-      {/* All demos share one grid cell so the panel keeps the tallest demo's height across tabs. */}
-      <div className="grid">
+      {/* All demos share one grid cell so the panel keeps the tallest demo's height across tabs.
+          grid-cols-1 (minmax(0, 1fr)) keeps the column at the panel's width; a plain auto column grows to
+          the widest content, such as a long install command, and the panel scrolls sideways. */}
+      <div className="grid grid-cols-1">
         {MODULES.map(({ id }) => {
           const Demo = DEMOS[id]
           const hidden = id !== module

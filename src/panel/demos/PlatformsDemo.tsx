@@ -30,7 +30,7 @@ export function PlatformsDemo({ lang }: { lang: Lang }) {
           </button>
         ))}
       </div>
-      <pre className="overflow-x-auto rounded-xl border border-white/40 bg-neutral-900 p-3 font-mono text-xs text-neutral-100 select-all">
+      <pre className="whitespace-pre-wrap break-words rounded-xl border border-white/40 bg-neutral-900 p-3 font-mono text-xs text-neutral-100 select-all">
         $ {cmd}
       </pre>
       <div className="flex items-center justify-between gap-2">

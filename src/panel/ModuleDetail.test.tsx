@@ -46,3 +46,25 @@ test('switching tabs keeps the demo state (no remount)', async () => {
   await userEvent.click(screen.getByRole('tab', { name: t('en', 'module.automation.name') }))
   expect(within(slot()).getAllByRole('switch')[2]).toHaveAttribute('aria-checked', 'true')
 })
+
+test('the demo column cannot grow past the panel', () => {
+  render(<ModuleDetail lang="en" module="platforms" onSelect={noop} onBack={noop} />)
+  // A plain grid's auto column grows to its widest item (a long install command) and the panel scrolls sideways.
+  expect(screen.getAllByTestId('demo-slot')[0].parentElement!.className).toContain('grid-cols-1')
+})
+
+test('install commands wrap instead of scrolling sideways', () => {
+  render(<ModuleDetail lang="en" module="platforms" onSelect={noop} onBack={noop} />)
+  const slot = screen.getAllByTestId('demo-slot').find((s) => s.dataset.module === 'platforms')!
+  const pre = slot.querySelector('pre')!
+  expect(pre.className).toContain('whitespace-pre-wrap')
+  expect(pre.className).not.toContain('overflow-x-auto')
+})
+
+test('active automation rules show a green track', () => {
+  render(<ModuleDetail lang="en" module="automation" onSelect={noop} onBack={noop} />)
+  const slot = screen.getAllByTestId('demo-slot').find((s) => s.dataset.module === 'automation')!
+  const [on, , off] = within(slot).getAllByRole('switch')
+  expect(on.lastElementChild!.className).toContain('bg-emerald-500')
+  expect(off.lastElementChild!.className).not.toContain('bg-emerald-500')
+})

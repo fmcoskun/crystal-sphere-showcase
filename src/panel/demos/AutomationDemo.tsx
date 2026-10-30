@@ -28,7 +28,7 @@ export function AutomationDemo({ lang }: { lang: Lang }) {
           </span>
           <span
             className={`relative h-[25px] w-[46px] shrink-0 rounded-full p-0.5 transition ${
-              active[i] ? 'bg-neutral-900/80' : 'bg-black/15'
+              active[i] ? 'bg-emerald-500' : 'bg-black/15'
             }`}
           >
             <span

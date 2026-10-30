@@ -6,7 +6,8 @@
 //     [--query renderer=css] [--check panel|bg|tone|all] [--theme light|dark] [--open] [--shot <dir>]
 //
 // panel: the dialog keeps the same width and height on all four module tabs (±1 px), and the
-//        previous demo is gone 60 ms after a tab switch (no overlapping text).
+//        previous demo is gone 60 ms after a tab switch (no overlapping text), and nothing scrolls
+//        sideways on any Platforms sub-tab.
 // bg:    the studio background in two screen corners is the theme colour (±3 per channel);
 //        with --open, also the lower left, where a caustic left behind by the parked sphere would show.
 // tone:  the sphere's inside looks the same at tier 0 (no postprocessing) and tier 1 (±3); dev server only.
@@ -199,8 +200,23 @@ try {
             return [Math.round(r.width), Math.round(r.height)] })()`),
         )
       }
+      // The Platforms demo (last tab) has the longest content: walk its sub-tabs and make sure neither
+      // the panel nor the command box ever scrolls sideways.
+      let sideways = 0
+      const subTabs = await ev(`document.querySelectorAll('[data-module=platforms] [role=tab]').length`)
+      for (let i = 0; i < subTabs; i++) {
+        await ev(`document.querySelectorAll('[data-module=platforms] [role=tab]')[${i}].click()`)
+        await sleep(200)
+        sideways += await ev(`[document.querySelector('[role=dialog]'), document.querySelector('[data-module=platforms] pre')]
+          .filter((e) => e.scrollWidth > e.clientWidth).length`)
+      }
       const spread = (k) => Math.max(...boxes.map((b) => b[k])) - Math.min(...boxes.map((b) => b[k]))
-      report({ check: 'panel', size, query, boxes, leaked, ok: spread(0) <= 1 && spread(1) <= 1 && leaked === 0 })
+      // Heights are read after the sub-tab walk too: a wrapped command must not grow the panel.
+      const after = await ev(`(() => { const r = document.querySelector('[role=dialog]').getBoundingClientRect();
+        return [Math.round(r.width), Math.round(r.height)] })()`)
+      boxes.push(after)
+      const ok = spread(0) <= 1 && spread(1) <= 1 && leaked === 0 && sideways === 0
+      report({ check: 'panel', size, query, boxes, leaked, sideways, ok })
     }
 
     if (shotDir) {
