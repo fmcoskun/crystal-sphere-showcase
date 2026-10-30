@@ -1,10 +1,29 @@
 export type Tier = 0 | 1 | 2 | 3
 
-export const TIERS: Record<Tier, { dpr: number; samples: number; resolution: number }> = {
-  0: { dpr: 1, samples: 2, resolution: 128 },
-  1: { dpr: 1.25, samples: 4, resolution: 256 },
-  2: { dpr: 1.5, samples: 6, resolution: 512 },
-  3: { dpr: 2, samples: 10, resolution: 1024 },
+export interface TierSettings {
+  dpr: number
+  samples: number
+  resolution: number
+  /** lite = tone mapping + SMAA; full = + bloom + grain. */
+  post: 'off' | 'lite' | 'full'
+  /** Caustics map resolution; 0 keeps the fake CausticFloor. */
+  caustics: 0 | 512 | 1024
+  /** Breathing surface and pointer ripples. */
+  liquid: boolean
+  segments: number
+}
+
+export const TIERS: Record<Tier, TierSettings> = {
+  0: { dpr: 1, samples: 2, resolution: 128, post: 'off', caustics: 0, liquid: false, segments: 64 },
+  1: { dpr: 1.25, samples: 4, resolution: 256, post: 'lite', caustics: 0, liquid: false, segments: 96 },
+  2: { dpr: 1.5, samples: 6, resolution: 512, post: 'full', caustics: 512, liquid: true, segments: 96 },
+  3: { dpr: 2, samples: 10, resolution: 1024, post: 'full', caustics: 1024, liquid: true, segments: 128 },
+}
+
+/** Dev flag `?tier=N` (0–3); anything else is ignored. */
+export function forcedTier(search: string): Tier | null {
+  const v = new URLSearchParams(search).get('tier')
+  return v === '0' || v === '1' || v === '2' || v === '3' ? (Number(v) as Tier) : null
 }
 
 export interface Caps {

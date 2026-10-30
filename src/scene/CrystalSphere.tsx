@@ -33,7 +33,7 @@ export function CrystalSphere({
   return (
     <group ref={group}>
       <mesh>
-        <sphereGeometry args={[1.5, 96, 96]} />
+        <sphereGeometry args={[1.5, q.segments, q.segments]} />
         <MeshTransmissionMaterial
           transmission={1}
           thickness={1.4}

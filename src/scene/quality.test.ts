@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { chooseRenderer, createFrameSampler, initialTier, nextTier, type Caps } from './quality'
+import { chooseRenderer, createFrameSampler, forcedTier, initialTier, nextTier, TIERS, type Caps, type Tier } from './quality'
 
 const caps = (over: Partial<Caps>): Caps => ({
   webgl: true,
@@ -40,4 +40,28 @@ test('frame sampler skips the warm-up window and ignores hidden-tab gaps', () =>
   // a 5 s gap from a hidden tab is ignored entirely
   expect(s.push(5000)).toBeNull()
   expect([s.push(10), s.push(10), s.push(16)]).toEqual([null, null, 12])
+})
+
+test('each lower tier never turns a layer on that the tier above has off', () => {
+  const postRank = { off: 0, lite: 1, full: 2 } as const
+  for (const t of [1, 2, 3] as Tier[]) {
+    const hi = TIERS[t]
+    const lo = TIERS[(t - 1) as Tier]
+    expect(postRank[lo.post]).toBeLessThanOrEqual(postRank[hi.post])
+    expect(lo.caustics).toBeLessThanOrEqual(hi.caustics)
+    expect(lo.segments).toBeLessThanOrEqual(hi.segments)
+    if (!hi.liquid) expect(lo.liquid).toBe(false)
+  }
+})
+
+test('tier 0 is the bare sphere: no post, fake caustic, no liquid', () => {
+  expect(TIERS[0]).toMatchObject({ post: 'off', caustics: 0, liquid: false })
+})
+
+test('forcedTier reads ?tier=N and ignores junk', () => {
+  expect(forcedTier('?tier=1')).toBe(1)
+  expect(forcedTier('?renderer=webgl&tier=3')).toBe(3)
+  expect(forcedTier('?tier=9')).toBeNull()
+  expect(forcedTier('?tier=x')).toBeNull()
+  expect(forcedTier('')).toBeNull()
 })

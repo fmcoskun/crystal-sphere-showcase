@@ -2,7 +2,7 @@ import { Component, lazy, Suspense, useCallback, useState, type ReactNode } from
 import { CssCrystal } from '../fallback/CssCrystal'
 import type { Optics } from '../state/optics'
 import type { Theme } from '../state/theme'
-import { chooseRenderer, detectCaps, initialTier, nextTier, type Tier } from './quality'
+import { chooseRenderer, detectCaps, forcedTier, initialTier, nextTier, type Tier } from './quality'
 
 const CrystalScene = lazy(() => import('./CrystalScene'))
 
@@ -39,7 +39,9 @@ function pickRenderer(force?: 'webgl' | 'css'): 'webgl' | 'css' {
 
 export function SphereHost({ theme, optics, presence, light, forceRenderer }: Props) {
   const [renderer, setRenderer] = useState(() => pickRenderer(forceRenderer))
-  const [tier, setTier] = useState<Tier>(() => initialTier(detectCaps()))
+  const [tier, setTier] = useState<Tier>(
+    () => (import.meta.env.DEV ? forcedTier(window.location.search) : null) ?? initialTier(detectCaps()),
+  )
 
   const onTierNeeded = useCallback((avgMs: number) => setTier((t) => nextTier(t, avgMs)), [])
   const onContextLost = useCallback(() => setRenderer('css'), [])
