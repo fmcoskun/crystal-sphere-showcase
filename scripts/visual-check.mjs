@@ -5,7 +5,8 @@
 //   node scripts/visual-check.mjs [--url http://localhost:5173] [--size 1280x800,390x844]
 //     [--query renderer=css] [--check panel|bg|tone|all] [--theme light|dark] [--open] [--shot <dir>]
 //
-// panel: the dialog keeps the same width and height on all four module tabs (±1 px).
+// panel: the dialog keeps the same width and height on all four module tabs (±1 px), and the
+//        previous demo is gone 60 ms after a tab switch (no overlapping text).
 // bg:    the studio background in two screen corners is the theme colour (±3 per channel);
 //        with --open, also the lower left, where a caustic left behind by the parked sphere would show.
 // tone:  the sphere's inside looks the same at tier 0 (no postprocessing) and tier 1 (±3); dev server only.
@@ -182,16 +183,24 @@ try {
       await clickUntil(ev, '[role=dialog] button.w-full', '[role=tab]')
       await sleep(700)
       const boxes = []
+      let leaked = 0
       for (let i = 0; i < 4; i++) {
         await ev(`document.querySelectorAll('[role=tab]')[${i}].click()`)
-        await sleep(700)
+        // Right after the switch the old demo must already be gone: any of its elements still painted
+        // (visible and not under a fully transparent slot) overlaps the new demo's text.
+        await sleep(60)
+        leaked += await ev(`[...document.querySelectorAll('[data-testid=demo-slot][inert]')]
+          .filter((s) => getComputedStyle(s).opacity !== '0')
+          .flatMap((s) => [...s.querySelectorAll('*')])
+          .filter((e) => getComputedStyle(e).visibility === 'visible').length`)
+        await sleep(640)
         boxes.push(
           await ev(`(() => { const r = document.querySelector('[role=dialog]').getBoundingClientRect();
             return [Math.round(r.width), Math.round(r.height)] })()`),
         )
       }
       const spread = (k) => Math.max(...boxes.map((b) => b[k])) - Math.min(...boxes.map((b) => b[k]))
-      report({ check: 'panel', size, query, boxes, ok: spread(0) <= 1 && spread(1) <= 1 })
+      report({ check: 'panel', size, query, boxes, leaked, ok: spread(0) <= 1 && spread(1) <= 1 && leaked === 0 })
     }
 
     if (shotDir) {

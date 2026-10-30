@@ -25,6 +25,9 @@ test('hidden demos are inert and hidden from assistive tech', () => {
     expect(s).toHaveAttribute('aria-hidden', 'true')
     expect(s).toHaveAttribute('inert')
     expect(s.className).toContain('invisible')
+    // visibility is inherited and transitioned by .crystal-row (0.32 s); opacity on the slot is not,
+    // so it hides the old demo at once instead of letting it overlap the new one.
+    expect(s.className).toContain('opacity-0')
   }
 })
 

@@ -74,7 +74,9 @@ export function ModuleDetail({
               data-module={id}
               inert={hidden}
               aria-hidden={hidden || undefined}
-              className={`[grid-area:1/1] ${hidden ? 'invisible' : ''}`}
+              // opacity-0 hides the old demo at once: its rows transition `visibility` (inherited from
+              // `invisible`) and would otherwise stay painted for ~0.3 s over the new demo.
+              className={`[grid-area:1/1] ${hidden ? 'invisible opacity-0' : ''}`}
             >
               <Demo lang={lang} />
             </div>
