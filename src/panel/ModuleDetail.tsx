@@ -25,7 +25,6 @@ export function ModuleDetail({
   onBack: () => void
 }) {
   const def = MODULES.find((m) => m.id === module)!
-  const Demo = DEMOS[module]
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3 pr-14">
@@ -63,7 +62,25 @@ export function ModuleDetail({
           ))}
         </div>
       </div>
-      <Demo key={module} lang={lang} />
+      {/* All demos share one grid cell so the panel keeps the tallest demo's height across tabs. */}
+      <div className="grid">
+        {MODULES.map(({ id }) => {
+          const Demo = DEMOS[id]
+          const hidden = id !== module
+          return (
+            <div
+              key={id}
+              data-testid="demo-slot"
+              data-module={id}
+              inert={hidden}
+              aria-hidden={hidden || undefined}
+              className={`[grid-area:1/1] ${hidden ? 'invisible' : ''}`}
+            >
+              <Demo lang={lang} />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
