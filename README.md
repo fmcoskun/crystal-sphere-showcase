@@ -2,7 +2,6 @@
 
 A skills showcase for a fictional product: a physically based glass sphere (React + Three.js) that springs into a glass control panel with four live micro-demos. Turkish and English, desktop and phone.
 
-
 ## Run
 
 ```bash
@@ -41,7 +40,7 @@ npm run visual -- --open --shot shots/                        # screenshots, pan
 | Real caustics (tiers 2–3), liquid surface and pointer ripples | `src/scene/CausticsLayer.tsx`, `src/scene/liquid.ts` |
 | Postprocessing and the tone-mapped studio background | `src/scene/Effects.tsx`, `src/scene/toneMap.ts` |
 | Renderer choice, quality tiers, context-loss fallback | `src/scene/SphereHost.tsx`, `src/scene/quality.ts` |
-| Pure CSS fallback sphere (from the prototype) | `src/fallback/` |
+| Pure CSS fallback sphere (no WebGL or very weak devices) | `src/fallback/` |
 | Pointer / touch / tilt light mapping | `src/scene/input.ts`, `useLightOffset.ts` |
 | Glass panel, module list, micro-demos | `src/panel/` |
 | Language, theme, studio sliders | `src/i18n/`, `src/ui/` |
