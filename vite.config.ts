@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Relative asset paths: the site is served from a subpath on GitHub Pages
+  // (/crystal-sphere-showcase/) and from the root by `vite preview`.
+  base: './',
   build: {
     // The WebGL stack (three, r3f, drei) is only reached through the lazy CrystalScene import,
     // so default splitting keeps it out of the first paint. Its chunk is large by nature.

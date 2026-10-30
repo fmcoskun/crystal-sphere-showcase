@@ -2,6 +2,8 @@
 
 An interactive liquid-glass crystal sphere built with React, Three.js and React Three Fiber. The sphere refracts a studio backdrop in real time, casts a caustic, ripples where you touch it, and springs open into a glass control panel with four live micro-demos for a fictional product. Turkish and English, desktop and phone.
 
+**Live demo: https://fmcoskun.github.io/crystal-sphere-showcase/**
+
 ![The glass sphere on the light studio backdrop, with its caustic falling to the lower left](docs/screenshots/hero.png)
 
 | Pointer ripples and the caustic they cast | Dark studio |
@@ -112,5 +114,5 @@ Phones start at tier 2, desktops at 3; slow frames step the tier down. Reduced m
 - Visual checks (headless Chrome, production build, 1280×800 and 390×844): panel size fixed across tabs; studio background exact in light and dark at tiers 0, 1 and 3.
 - Checked in a desktop browser (800×600) and a 375×812 mobile emulation: sphere, caustic, panel spring, four demos, dark theme, studio sliders.
 - Real phone check (2026-10-30, over the LAN): sphere fit, touch drag, smoothness, panel, four demos and corner controls all worked; repeated on the production build after the liquid surface, caustics and postprocessing landed.
-- **Not yet checked:** iOS tilt (motion sensors need HTTPS; the LAN test was plain http).
-- **Not deployed.** `dist/` is a static site; Vercel or Netlify can serve it as-is once an account is connected.
+- **Not yet checked:** iOS tilt. Motion sensors need HTTPS: the LAN test was plain http, but the GitHub Pages site is served over HTTPS.
+- **Deployed** to GitHub Pages by `.github/workflows/pages.yml` on every push to `master`: tests, typecheck, build and bundle budget must pass first. Asset paths are relative (`base: './'`), so the same build works from the Pages subpath and from `vite preview`.
